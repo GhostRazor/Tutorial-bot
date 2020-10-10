@@ -7,6 +7,7 @@ const dataScheama = mongoose.Schema({
     daily:String,
     Bank: Number,
     beg:Number,
+    daily:Number,
 
 })
 module.exports = mongoose.model("Data",dataScheama)
