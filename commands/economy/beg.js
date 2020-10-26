@@ -1,25 +1,25 @@
 const mongoose = require("mongoose")
 const config = require("../../config.json")
-const {MessageEmbed, Client} = require("discord.js")
-const ms = require("parse-ms")
+const {MessageEmbed} = require("discord.js")
 
 mongoose.connect(config.mongoPass,{
     useNewUrlParser:true,
     useUnifiedTopology:true,
 })
 const Data = require('../../models/data.js')
-const { model } = require("../../models/data.js")
+const data = require("../../models/data.js")
 
-module.exports ={
-    name:"daily",
+module.exports={
+    name:"beg",
+    category:"economy",
 
     run:async(client,message,args) =>{
-        let timeout = 86400000
-        let reward = 1500
-        Data.findOne ({
-            id:message.author.id
+        let timeout = 120000;
+        let reward = Math.floor(Math.random()* Math.floor(100)) //You can set any number
 
-        },(err,data) =>{
+        Data.findOne({
+            id:message.author.id
+        },(err,data)=>{
             if(err) console.log(err);
             if(!data){
                 const newD = new Data({
@@ -27,27 +27,31 @@ module.exports ={
                     Money:reward,
                     Bank:0,
                     lb:"all",
-                    daily:Date.now()
+
+                    beg:Date.now()
                 })
-                newD.save().catch(err => console.log(err))
-                 return message.channel.send("Here are your first daily reward")
+                newD.save().catch(err => console.log(err));
+                let member = message.guild.members.cache.random();
+                return message.channel.send(`You beg for the first time and you receive $${reward} from ${member}`)
             }else{
-                if(timeout -(Date.now()-data.daily)>0){
-                    let time = ms(timeout-(Date.now()-data.daily));
+                if(timeout- (Date.now()-data.beg) >0){
+                    let time = ms(timeout -(Date.now()-data.beg));
+
                     let embed = new MessageEmbed()
-                    .setTitle("Slow down")
-                    .setDescription(`You need to wait ${time.hours}h ${time.minutes}m ${time.seconds}s to get more money`)
+                    .setDescription(`You can beg again in **${time.hours}h ${time.minutes}m ${time.seconds}s**`)
+                    .setColor("RANDOM")
 
                     message.channel.send(embed)
                 }else{
                     data.Money +=reward
-                    data.daily =Date.now()
-                    data.save().catch(err => console.log(err))
-
+                    data.beg = Date.now()
+                    data.save().catch(err => console.log(err));
+                    let member = message.guild.members.cache.random();
                     let embed = new MessageEmbed()
-                    .setTitle("Your daily reward")
-                    .setDescription(`You received your daily reward of $${reward}`)
+                    .setDescription(`You beg for some money and ${member} finally gives you $${reward}`)
+                    .setColor("RANDOM")
                     message.channel.send(embed)
+
                 }
             }
         })
